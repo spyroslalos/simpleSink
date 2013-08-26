@@ -1,0 +1,37 @@
+Info
+====
+
+This is package contains Flume java related custom code like custom sources, sinks, interceptors.
+
+contains:
+  ...
+
+Build it with Koji
+==================
+
+In order to build it with koji (remove scratch if not a test build):
+
+    koji build --scratch TAG git+http://git.cern.ch/cernpub/.../skeleton-flume-extra#HEAD
+
+Or, if a tag is available:
+
+    koji build --scratch TAG git+http://git.cern.ch/cernpub/.../skeleton-flume-extra#TAG
+
+Build a new version
+===================
+
+To create the binary tarball:
+
+    mvn clean
+    mvn assembly:assembly -DdescriptorId=bin
+
+When you want to build a new version you should update the sources file
+with the link to the new tar.gz and the related checksum.
+
+You should also check if any of the names are not changed
+
+You can then create a git tag for it:
+
+    git tag qualified_version
+    git push --tags
+
