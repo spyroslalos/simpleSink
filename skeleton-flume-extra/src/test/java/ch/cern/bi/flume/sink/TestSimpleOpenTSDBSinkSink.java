@@ -100,11 +100,10 @@ public class TestSimpleOpenTSDBSinkSink {
 
         sink.setChannel(channel);
         sink.start();
-
+//	Event event = null;
         Event event = EventBuilder.withBody(
                 "put batchhosts.run 1376905539 12 hostname=lxbsq2919 status=closed_Full prod=1",
                 Charset.forName("UTF-8"));
-
         channel.put(event);
 
         sink.process();

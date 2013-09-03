@@ -86,6 +86,74 @@ public class SimpleOpenTSDBSink extends AbstractSink implements Configurable {
         counterGroup = new CounterGroup();
     }
 
+    public String Parser(String event){
+        
+        String[] result = event.split("header");
+        String[] result2 = result[0].split("body\":");
+        /*here i have the body*/
+        System.out.println(result2[1]);
+        /*here i have the header*/
+        System.out.println(result[1]);
+        
+        /* THIS IS THE HEADER */
+        // replace multiple characters in string with BACKSPACE in HEADER
+        logger.info("HEADER ISSSS : " + result[1]);
+        String Help_header = result[1].replaceAll("[\"{}]", "");
+        System.out.println(Help_header);
+        Help_header = Help_header.replaceAll(" ","");
+        System.out.println(Help_header);
+        Help_header = Help_header.replaceAll("[:,]"," ");
+        System.out.println(Help_header);
+        String[] headerArr = Help_header.split(" +");
+        for ( int i=0; i < headerArr.length ; i++){
+		
+		logger.info("Array of " + i + headerArr[i]);
+
+	}
+	logger.info("XAXAXa" + Help_header);
+        String header = "put ";
+	logger.info("4444 is " + headerArr[4]);
+        header = header + headerArr[4] + " " + headerArr[2] + " " + headerArr[6] ;
+        
+	logger.info("ZEEEEEEEEEE1111111111" + header);
+	/*
+        for (int i=0 ; i<headerArr.length ; i +=2){
+        	if (headerArr[i]=="")
+        	logger.info(headerArr[i] + " XOXOXOXO " + headerArr[i+1]);
+        	header +=  headerArr[i] + "=" + headerArr[i+1] + " ";     
+        }
+        */
+        System.out.println("Finally the header is :" + header);
+        
+        /* THIS IS THE BODY */
+	logger.info("BODYYYY ISSSS : " + result2[1]);
+        Help_header = result2[1].replaceAll("[\"{}' ]", "");
+        System.out.println(Help_header);
+        Help_header = Help_header.replaceAll(" ","");
+        System.out.println(Help_header);
+        Help_header = Help_header.replaceAll("[:,]"," ");
+        System.out.println(Help_header);
+        headerArr = Help_header.split(" +");
+        logger.info("ZEEEEEEEEEEEEEEEEEEE" + Help_header);
+        System.out.println(headerArr.length);
+        String body = "";
+        
+        for (int i=0 ; i<headerArr.length ; i +=2){
+        	if (headerArr[i]=="")
+        	logger.info(headerArr[i] + " XOXOXOXO " + headerArr[i+1]);
+        	body +=  headerArr[i] + "=" + headerArr[i+1] + " ";     
+        }
+        logger.info("Finally the body is :" + body);
+        
+        event = header + " " + body; 
+        
+        logger.info("The hole Event is : " + event);        
+        
+        return event;
+       
+     	
+    }
+    
     @Override
     public void configure(Context context) {
         batchSize = context.getInteger("batchSize", DFLT_BATCH_SIZE);
@@ -149,18 +217,25 @@ public class SimpleOpenTSDBSink extends AbstractSink implements Configurable {
         transaction.begin();
         try {
             Event event = channel.take();
-
-            if (event != null && validEvent(event.getBody()) >= 0) {
+            // event != null && validEvent(event.getBody()) >= 0
+            if ( event != null ) {
+           	String even2 = new String(event.getBody());
+	    	logger.info("LALALALALALLALALALAL!!L!LL!L!!!!!" + even2);
                 logger.info(new String(event.getBody()));
-                parser(new String(event.getBody()));
-                logger.info(
-                        "metric:" + metric +
-                        ", timestamp: " + timestamp +
-                        ", value: " + value);
-    		if(value >= 0 )
-                	tsdb.addPoint(metric, timestamp, value, tags).addErrback(err);
-                tags.clear();
-            }
+	        char c = even2.charAt(0);
+		if ( c == '{' ) {
+               		String event_str = this.Parser( even2 );
+                	parser(event_str);
+		        logger.info(
+                	        "metric:" + metric +
+                       	 	", timestamp: " + timestamp +
+                        	", value: " + value);
+    			if(value >= 0 )
+                		tsdb.addPoint(metric, timestamp, value, tags).addErrback(err);
+            
+	    	}
+	    }
+	    tags.clear();
             transaction.commit();
             status = Status.READY;
         } catch (Throwable ex) {
