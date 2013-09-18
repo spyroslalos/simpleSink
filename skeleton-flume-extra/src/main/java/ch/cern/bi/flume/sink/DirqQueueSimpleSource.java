@@ -241,8 +241,10 @@ public class DirqQueueSimpleSource extends AbstractSource implements Configurabl
 	      	continue;  // we can simply skip it for now
             }
             logger.info("Am gonna parse the Event : " + dirq.get(element) );
-            logger.info("OPAPAPAPAPAPAPAPAPAP" + this.Parser(dirq.get(element)) );
-
+  //          logger.info("OPAPAPAPAPAPAPAPAPAP" + this.Parser(dirq.get(element)) );
+            element = element.replace("\\\"", "\"" );
+//	    dirq.set(element);            
+            logger.info("9999999999999999999999999999999999999999999 " + dirq.get(element) );
 
             logger.debug("Dirq source " + getName() + " handling message: " + element);
             byte[] content = dirq.getAsByteArray(element);

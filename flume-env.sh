@@ -28,7 +28,7 @@
 JAVA_HOME = /usr/lib/jvm/jdk1.7.0_04/
 
 # Give Flume more memory and pre-allocate, enable remote monitoring via JMX
-JAVA_OPTS="-Xms20m -Xmx50m -Duser.timezone=Europe/Zurich -Dsun.net.spi.nameservice.provider.1=dns,sun -Dsun.net.inetaddr.ttl=0 -Dsun.net.inetaddr.negative.ttl=0 -Dnetworkaddress.cache.ttl=0 -Dnetworkaddress.cache.negative.ttl=0"
+JAVA_OPTS="-Xms20m -Xmx250m -Duser.timezone=Europe/Zurich -Dsun.net.spi.nameservice.provider.1=dns,sun -Dsun.net.inetaddr.ttl=0 -Dsun.net.inetaddr.negative.ttl=0 -Dnetworkaddress.cache.ttl=0 -Dnetworkaddress.cache.negative.ttl=0"
 
 # Note that the Flume conf directory is always included in the classpath.
 FLUME_CLASSPATH=/usr/share/java/*:/usr/share/elasticsearch/lib/*:/etc/flume-ng/hbsink/conf/skeleton-flume-extra/target/*:/etc/flume-ng/hbsink/conf/skeleton-flume-extra/lib/*

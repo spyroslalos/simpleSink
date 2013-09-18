@@ -35,7 +35,7 @@ import org.apache.flume.sink.AbstractSink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
+import java.util.*;
 
 
 /**
@@ -78,13 +78,27 @@ public class SimpleOpenTSDBSink extends AbstractSink implements Configurable {
     private String metric = null;
     private long timestamp;
     private float value;
-    private HashMap<String, String> tags = new HashMap<String, String>();
-
+    private Map<String, String> tags = new HashMap<String, String>();
+    private HashMap<String, String> tags2 = new HashMap<String, String>();
     private final Callback<Exception, Exception> err = new ErrorCallback();
 
     public SimpleOpenTSDBSink() {
         counterGroup = new CounterGroup();
     }
+
+
+    public boolean isFloat( String input )  
+    {  
+       try  
+       {  
+          Float.parseFloat( input );  
+          return true;  
+       }  
+       catch( Exception e)  
+       {  
+          return false;  
+       }  
+    }  
 
     public String Parser(String event){
         
@@ -97,8 +111,8 @@ public class SimpleOpenTSDBSink extends AbstractSink implements Configurable {
         
         /* THIS IS THE HEADER */
         // replace multiple characters in string with BACKSPACE in HEADER
-        logger.info("HEADER ISSSS : " + result[1]);
-        String Help_header = result[1].replaceAll("[\"{}]", "");
+        logger.info("BODY ISSSS : " + result[1] + "AND I WILL CREATE A MAP FROM THE STRING");
+        String Help_header = event.replaceAll("[\"\\{:}]", "");
         System.out.println(Help_header);
         Help_header = Help_header.replaceAll(" ","");
         System.out.println(Help_header);
@@ -144,7 +158,7 @@ public class SimpleOpenTSDBSink extends AbstractSink implements Configurable {
         	body +=  headerArr[i] + "=" + headerArr[i+1] + " ";     
         }
         logger.info("Finally the body is :" + body);
-        
+        header = header.replaceAll("[']", ""); 
         event = header + " " + body; 
         
         logger.info("The hole Event is : " + event);        
@@ -222,20 +236,55 @@ public class SimpleOpenTSDBSink extends AbstractSink implements Configurable {
            	String even2 = new String(event.getBody());
 	    	logger.info("LALALALALALLALALALAL!!L!LL!L!!!!!" + even2);
                 logger.info(new String(event.getBody()));
-	        char c = even2.charAt(0);
-		if ( c == '{' ) {
-               		String event_str = this.Parser( even2 );
-                	parser(event_str);
-		        logger.info(
-                	        "metric:" + metric +
-                       	 	", timestamp: " + timestamp +
-                        	", value: " + value);
-    			if(value >= 0 )
-                		tsdb.addPoint(metric, timestamp, value, tags).addErrback(err);
+		tags = event.getHeaders();
+		Iterator iterator = tags.keySet().iterator();  
+		int i = 1;
+		// i will create the header and store the values....
+		while (iterator.hasNext()) {
+			  
+   			String key = iterator.next().toString(); 
+		 
+   			String valueC = tags.get(key).toString();  
+   		        if (i == 1){
+				valueC = valueC.substring(0, valueC.length() - 3);
+				this.timestamp = Long.parseLong(valueC);	
+			}
+			else if (i == 3)
+			        this.metric = valueC;
+			else if (i == 5){
+				
+        			this.value = Float.parseFloat(valueC);	
+			}
+   			logger.info(key + " " + valueC);
+			logger.info("i ISSSSSS" + i);
+  			i++;
+		}
+		// i will create both body and hashmap
+		String helper = even2.replaceAll("[\"{}':,]", "");
+		logger.info("BODY WITH ONLY GAPS IS" + " " + helper);
+		String[] result = helper.split(" ");
+		
+		for (int size = 0; size < result.length; size+=2) {
+            		logger.info("Prices ARE!!" + " " + result[size] + result[size+1]);
+			this.tags2.put(result[size], result[size+1]);
+        	}
+		
+		//
+//	        char c = even2.charAt(0);
+//		if ( c == '{' ) {
+//               		String event_str = this.Parser( even2 );
+//                	parser(event_str);
+		logger.info(
+                	"metric:" + metric +
+                       	", timestamp: " + timestamp +
+                       	", value: " + value);
+    		if(value >= 0 )
+                	tsdb.addPoint(metric, timestamp, value, tags2).addErrback(err);
             
-	    	}
+//	    	}
 	    }
 	    tags.clear();
+	    tags2.clear();
             transaction.commit();
             status = Status.READY;
         } catch (Throwable ex) {
